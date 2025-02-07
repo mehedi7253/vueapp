@@ -1,6 +1,6 @@
 import './bootstrap';
 import { createApp, render } from 'vue';
-import App from './components/App.vue';
+import App from './App.vue';
 import router from './router/index.js';
 
 
