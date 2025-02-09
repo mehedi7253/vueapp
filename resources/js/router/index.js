@@ -20,6 +20,11 @@ const routes = [
         path: '/register',
         name:'register',
         component: () => import('../components/auth/Register.vue')
+    },
+    {
+        path: '/dashboard',
+        name:'dashboard',
+        component: () => import('../components/Dashboard.vue')
     }
 ];
 
@@ -27,6 +32,5 @@ const router = createRouter({
     history: createWebHistory(),
     routes
 });
-
 
 export default router;

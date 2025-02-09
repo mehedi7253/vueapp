@@ -59,7 +59,7 @@
                         "transition": "bounce",
                         "dangerouslyHTMLString": true
                     });
-                    store.dispatch('setUser', response.data.token)
+                    store.dispatch('khayrul', response.data.token)
                     this.$router.push({name: 'dashboard'})
                 })
                 .catch(error => {

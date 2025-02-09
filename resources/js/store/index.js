@@ -1,45 +1,49 @@
-import { createStore } from 'vuex'
-const store = createStore({
+//impliment login registration store with token
+
+import Vue from 'vue'
+import Vuex from 'vuex'
+import axios from 'axios'
+
+Vue.use(Vuex)
+
+export default new Vuex.Store({
     state: {
-        toke: localStorage.getItem('token') || null,
-        userProfile: null,
+        token: localStorage.getItem('token'),
+        user: null
     },
     mutations: {
         SET_TOKEN(state, token) {
-            state.toke = token
-            localStorage.setItem('token', token)
+            state.token = token
+            if(token) {
+                localStorage.setItem('token', token)
+            } else {
+                localStorage.removeItem('token')
+            }
         },
-        CLEAR_TOKEN(state) {
-            state.token = null
-            localStorage.removeItem('token')
-        },
-        SET_USER_PROFILE(state, profile) {
-            state.userProfile = profile
+        SET_USER(state, user) {
+            state.user = user
         }
     },
     actions: {
-        login({ commit }, token){
-            commit('SET_TOKEN', token)
+        login({commit}, user) {
+            return axios.post('/login', user).then(({data}) => {
+                commit('SET_TOKEN', data.token)
+                commit('SET_USER', data.user)
+            })
         },
-        logout({ commit }) {
-            commit('CLEAR_TOKEN')
+        logout({commit}) {
+            return axios.post('/logout').then(() => {
+                commit('SET_TOKEN', null)
+                commit('SET_USER', null)
+            })
         },
-        async fetchUserProfile({ commit, state }) {
-            if (state.token) {
-                try{
-                    const response = await axios.get('/api/user',{
-                        headers: { Authorization: `Bearer ${state.token}` }
-                    })
-                    commit('SET_USER_PROFILE', response.data)
-                } catch (error) {
-                    console.error(error)
-                }
-            }
+        register({commit}, user) {
+            return axios.post('/register', user).then(({data}) => {
+                commit('SET_TOKEN', data.token)
+                commit('SET_USER', data.user)
+            })
         }
-    },
-
-    getters:{
-        isLoggedIn: state => state.token !== null,
-        userProfile: state => state.userProfile
     }
 })
+
+
