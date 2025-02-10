@@ -15,5 +15,8 @@
      <li class="nav-item d-none d-sm-inline-block">
        <router-link to="/register" class="nav-link">Registration</router-link>
      </li>
+     <li class="nav-item d-none d-sm-inline-block">
+       <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
+     </li>
    </ul>
 </template>

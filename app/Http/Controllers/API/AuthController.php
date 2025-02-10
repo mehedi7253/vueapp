@@ -12,29 +12,26 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-    public function register(RegistrationRequest $request)
+    public function register(Request $request)
     {
-        try {
-            $user = new User();
-            $user->name  = $request->name;
-            $user->email = $request->email;
-            $user->password = Hash::make($request->password);
-            $user->save();
+        $validatedData = $request->validate([
+            'name' => 'required|max:255',
+            'email' => 'required|email|unique:users',
+            'password' => 'required|min:4',
+        ]);
 
-            return response()->json([
-                'message' => 'User Registered Successfully!',
-                'user' => $user,
-            ], 201);
+        $user = User::create([
+            'name' => $validatedData['name'],
+            'email' => $validatedData['email'],
+            'password' => Hash::make($validatedData['password']),
+        ]);
 
-        }
-        catch (\Exception $ex) {
-            return response()->json([
-                'error' => 'Unable to save the user record, please refresh webpage and try again. If still problem persists contact with administrator'
-            ], 401);
-        }
+        $token = $user->createToken('token')->plainTextToken;
+
+        return response()->json(['user' => $user, 'token' => $token], 201);
     }
 
-    public function login(LoginRequest $request)
+    public function login(Request $request)
     {
         $user = User::where('email', $request->email)->first();
 
@@ -43,7 +40,7 @@ class AuthController extends Controller
                 'errors' => 'The provided credentials are incorrect.'
             ], 401);
         }
-        $token = $user->createToken('auth_token')->plainTextToken;
+        $token = $user->createToken('token')->plainTextToken;
 
         return response()->json([
             'token' => $token,

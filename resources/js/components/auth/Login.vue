@@ -1,72 +1,62 @@
 <template>
     <div class="container">
         <div class="row">
-            <div class="col-md-7 mx-auto">
-                <div class="mt-5 mb-5">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">login</h3>
-                        </div>
-                        <div class="card-body">
-                            <form @submit.prevent="loginForm">
-                                <div class="form-group col-12">
-                                    <label>Email <sup>*</sup></label>
-                                    <input type="email" v-bind:class="errors && errors.email ? 'form-control is-invalid' : 'form-control'" v-model="user.email" placeholder="Enter Your Email">
-                                    <span v-if="errors.email" class="text-danger">{{ errors.email }}</span>
-                                </div>
-                                <div class="form-group col-12">
-                                    <label>Password <sup>*</sup></label>
-                                    <input type="password" v-bind:class="errors && errors.password ? 'form-control is-invalid' : 'form-control'" v-model="user.password" placeholder="Enter Your Password">
-                                    <span v-if="errors.email" class="text-danger">{{ errors.password }}</span>
-                                </div>
+            <div class="col-md-6 mx-auto mt-5">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>User Login Form</h4>
 
-                                <div class="form-group col-12">
-                                    <button class="btn btn-success">Submit</button>
-                                </div>
-                            </form>
-                        </div>
+                    </div>
+                    <div class="card-body">
+                        <ul v-for="error in errors">
+                            <li class="text-danger">{{ error }}</li>
+                        </ul>
+                        <form @submit.prevent="login">
+                            <div class="form-group">
+                                <label for="email">Email address</label>
+                                <input type="email" class="form-control" id="email" v-model="email" placeholder="Enter Email">
+                                <span v-if="errors.email" class="text-danger">{{ errors.email }}</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Password</label>
+                                <input type="password" class="form-control" id="password" v-model="password" placeholder="Enter Email">
+                                <span v-if="errors.password" class="text-danger">{{ errors.password }}</span>
+                            </div>
+                            <div class="form-group mt-4">
+                                <button type="submit" class="btn btn-primary">Login</button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="card-footer">
+                        <router-link to="/register">Registration</router-link>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-
 </template>
-<script>
-    export default{
-        data(){
-            return{
-                user: {
-                    email: '',
-                    password: '',
-                },
-                errors: {},
-            }
-        },
-        methods: {
-            loginForm(){
-                axios.post('api/login', this.user)
-                .then(response => {
-                    this.errors = '';
-                    //clear all input fields
-                    this.user = {
-                        email: '',
-                        password: '',
-                    },
-                    toast("User Login Success!", {
-                        "theme": "auto",
-                        "type": "success",
-                        "transition": "bounce",
-                        "dangerouslyHTMLString": true
-                    });
-                    store.dispatch('khayrul', response.data.token)
-                    this.$router.push({name: 'dashboard'})
-                })
-                .catch(error => {
-                    this.errors = error.response.data.errors;
-                });
-            }
-        },
 
-    }
+<script>
+  import { mapActions } from 'vuex';
+
+  export default {
+    data() {
+      return {
+            email: '',
+            password: '',
+            errors: '',
+        };
+    },
+    methods: {
+      ...mapActions('auth', ['login']),
+      async login() {
+        try {
+          await this.login({ email: this.email, password: this.password });
+          this.$router.push('/dashboard');
+        } catch (error) {
+          alert('Login failed');
+        }
+      },
+    },
+  };
 </script>

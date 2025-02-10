@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from "vue-router";
+import store from "../store/index.js";
 
 const routes = [
     {
@@ -24,7 +25,10 @@ const routes = [
     {
         path: '/dashboard',
         name:'dashboard',
-        component: () => import('../components/Dashboard.vue')
+        component: () => import('../pages/dashboard.vue'),
+        meta:{
+            requiresAuth: true
+        }
     }
 ];
 
@@ -33,4 +37,11 @@ const router = createRouter({
     routes
 });
 
+router.beforeEach((to, from, next) => {
+    if (to.meta.requiresAuth && !store.getters['auth/isAuthenticated']) {
+        next('/login');
+      } else {
+        next();
+    }
+});
 export default router;

@@ -1,49 +1,69 @@
-//impliment login registration store with token
 
-import Vue from 'vue'
-import Vuex from 'vuex'
-import axios from 'axios'
+import { createStore } from 'vuex';
+import axios from 'axios';
 
-Vue.use(Vuex)
-
-export default new Vuex.Store({
-    state: {
-        token: localStorage.getItem('token'),
-        user: null
+export default createStore({
+  state: {
+    user: null,
+    token: localStorage.getItem('token') || null,
+  },
+  mutations: {
+    SET_USER(state, user) {
+      state.user = user;
     },
-    mutations: {
-        SET_TOKEN(state, token) {
-            state.token = token
-            if(token) {
-                localStorage.setItem('token', token)
-            } else {
-                localStorage.removeItem('token')
-            }
-        },
-        SET_USER(state, user) {
-            state.user = user
-        }
+    SET_TOKEN(state, token) {
+      state.token = token;
+      localStorage.setItem('token', token);
     },
-    actions: {
-        login({commit}, user) {
-            return axios.post('/login', user).then(({data}) => {
-                commit('SET_TOKEN', data.token)
-                commit('SET_USER', data.user)
-            })
-        },
-        logout({commit}) {
-            return axios.post('/logout').then(() => {
-                commit('SET_TOKEN', null)
-                commit('SET_USER', null)
-            })
-        },
-        register({commit}, user) {
-            return axios.post('/register', user).then(({data}) => {
-                commit('SET_TOKEN', data.token)
-                commit('SET_USER', data.user)
-            })
-        }
-    }
-})
-
+    LOGOUT(state) {
+      state.user = null;
+      state.token = null;
+      localStorage.removeItem('token');
+    },
+  },
+  actions: {
+    async login({ commit }, credentials) {
+      try {
+        const response = await axios.post('api/login', credentials);
+        commit('SET_USER', response.data.user);
+        commit('SET_TOKEN', response.data.token);
+        return response;
+      } catch (error) {
+        throw error;
+      }
+    },
+    async register({ commit }, userData) {
+      try {
+        await axios.post('api/register', userData);
+      } catch (error) {
+        throw error;
+      }
+    },
+    async fetchUser({ commit, state }) {
+      if (!state.token) return;
+      try {
+        const response = await axios.get('api/user', {
+          headers: { Authorization: `Bearer ${state.token}` },
+        });
+        commit('SET_USER', response.data);
+      } catch (error) {
+        commit('LOGOUT');
+      }
+    },
+    async logout({ commit }) {
+      try {
+        await axios.post('api/logout', null, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        });
+        commit('LOGOUT');
+      } catch (error) {
+        throw error;
+      }
+    },
+  },
+  getters: {
+    isAuthenticated: (state) => !!state.token,
+    getUser: (state) => state.user,
+  },
+});
 
