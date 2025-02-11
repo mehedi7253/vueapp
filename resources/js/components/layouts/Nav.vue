@@ -7,16 +7,34 @@
        <router-link to="/" class="nav-link">Home</router-link>
      </li>
      <li class="nav-item d-none d-sm-inline-block">
-       <router-link to="/about" class="nav-link">about</router-link>
-     </li>
-     <li class="nav-item d-none d-sm-inline-block">
-       <router-link to="/login" class="nav-link">Login</router-link>
-     </li>
-     <li class="nav-item d-none d-sm-inline-block">
-       <router-link to="/register" class="nav-link">Registration</router-link>
+        <button class="nav-link" @click="logout">Logout</button>
      </li>
      <li class="nav-item d-none d-sm-inline-block">
        <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
      </li>
    </ul>
 </template>
+<script>
+    import { mapState } from 'vuex';
+    import { toast } from 'vue3-toastify';
+    import 'vue3-toastify/dist/index.css';
+    export default {
+        computed: {
+           ...mapState(['isAuthenticated']),
+        },
+        methods: {
+            logout() {
+                this.$store.dispatch('logout');
+                toast("Logout Successful", {
+                    "theme": "auto",
+                        "type": "success",
+                        "transition": "bounce",
+                        "dangerouslyHTMLString": true
+                    });
+                setTimeout(() => {
+                    this.$router.push('/login');
+                }, 1000);
+            }
+        }
+    }
+</script>
