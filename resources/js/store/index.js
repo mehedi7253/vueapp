@@ -1,69 +1,90 @@
-
-import { createStore } from 'vuex';
-import axios from 'axios';
+import axios from "axios";
+import { createStore } from "vuex";
 
 export default createStore({
-  state: {
-    user: null,
-    token: localStorage.getItem('token') || null,
-  },
-  mutations: {
-    SET_USER(state, user) {
-      state.user = user;
+    state: {
+        token: localStorage.getItem('token') || '',
+        isAuthenticated: false,
+        user: null,
+        apiData: null,
     },
-    SET_TOKEN(state, token) {
-      state.token = token;
-      localStorage.setItem('token', token);
+    mutations: {
+        SET_API_DATA(state, data) {
+            state.apiData = data;
+        },
+        SET_USER(state, user) {
+            state.user = user;
+        },
+        UpdateAuthenticationStatus(state, status) {
+            state.isAuthenticated = status;
+        },
+        UpdateAuthStatus(state, status) {
+            state.isAuthenticated = status;
+        },
+        UpdateToken(state, token) {
+            state.token = token;
+            localStorage.setItem('token', token);
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        },
+        resetAuth(state) {
+            state.token = null;
+            state.isAuthenticated = false;
+        },
     },
-    LOGOUT(state) {
-      state.user = null;
-      state.token = null;
-      localStorage.removeItem('token');
+    actions: {
+        async fetchApiData({ commit }) {
+            try {
+                const response = await axios.get('/api/api-data');
+                commit('SET_API_DATA', response.data);
+            } catch (error) {
+                console.error('Failed to fetch API data:', error);
+            }
+        },
+        async fetchUser({ commit }) {
+            try {
+                const response = await axios.get('/api/user');
+                const user = response.data;
+                if (user && user.name) {
+                    commit('SET_USER', user);
+                } else {
+                    throw new Error('User data is invalid');
+                }
+            } catch (error) {
+                console.error('Failed to fetch user profile:', error);
+            }
+        },
+        checkUserAuthenticationStatus({ commit }) {
+            axios.get('/api/authenticated')
+                .then(response => {
+                    commit('UpdateAuthenticationStatus', response.data.status);
+                })
+                .catch(error => {
+                    console.error('Failed to check authentication status:', error);
+                });
+        },
+        setAuthStatus({ commit }, status) {
+            commit('UpdateAuthStatus', status);
+        },
+        setAuthToken({ commit }, token) {
+            commit('UpdateToken', token);
+        },
+        logout({ commit }) {
+            commit('resetAuth');
+            localStorage.removeItem('token');
+            delete axios.defaults.headers.common['Authorization'];
+        },
+        initializeAuth({ commit }) {
+            const token = localStorage.getItem('token');
+            if (token) {
+                commit('UpdateToken', token);
+                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+                commit('UpdateAuthenticationStatus', true);
+                commit('fetchUser');
+            }
+        }
     },
-  },
-  actions: {
-    async login({ commit }, credentials) {
-      try {
-        const response = await axios.post('api/login', credentials);
-        commit('SET_USER', response.data.user);
-        commit('SET_TOKEN', response.data.token);
-        return response;
-      } catch (error) {
-        throw error;
-      }
-    },
-    async register({ commit }, userData) {
-      try {
-        await axios.post('api/register', userData);
-      } catch (error) {
-        throw error;
-      }
-    },
-    async fetchUser({ commit, state }) {
-      if (!state.token) return;
-      try {
-        const response = await axios.get('api/user', {
-          headers: { Authorization: `Bearer ${state.token}` },
-        });
-        commit('SET_USER', response.data);
-      } catch (error) {
-        commit('LOGOUT');
-      }
-    },
-    async logout({ commit }) {
-      try {
-        await axios.post('api/logout', null, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        });
-        commit('LOGOUT');
-      } catch (error) {
-        throw error;
-      }
-    },
-  },
-  getters: {
-    isAuthenticated: (state) => !!state.token,
-    getUser: (state) => state.user,
-  },
+    getters: {
+        authStatus: state => state.isAuthenticated,
+        apiData: state => state.apiData,
+    }
 });
-

@@ -7,6 +7,7 @@ import store from './store/index.js';
 window.base_path = window.location.origin;
 
 const app = createApp(App);
+store.dispatch('initializeAuth');
 app.use(router)
 app.use(store)
 app.mount('#app')

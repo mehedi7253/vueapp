@@ -14,12 +14,12 @@
                         <form @submit.prevent="login">
                             <div class="form-group">
                                 <label for="email">Email address</label>
-                                <input type="email" class="form-control" id="email" v-model="email" placeholder="Enter Email">
+                                <input type="email" class="form-control" id="email" v-model="user.email" placeholder="Enter Email">
                                 <span v-if="errors.email" class="text-danger">{{ errors.email }}</span>
                             </div>
                             <div class="form-group">
                                 <label for="password">Password</label>
-                                <input type="password" class="form-control" id="password" v-model="password" placeholder="Enter Email">
+                                <input type="password" class="form-control" id="password" v-model="user.password" placeholder="Enter Email">
                                 <span v-if="errors.password" class="text-danger">{{ errors.password }}</span>
                             </div>
                             <div class="form-group mt-4">
@@ -37,26 +37,52 @@
 </template>
 
 <script>
-  import { mapActions } from 'vuex';
-
-  export default {
+import axios from 'axios';
+export default{
     data() {
-      return {
-            email: '',
-            password: '',
+        return {
+            user:{
+                email: '',
+                password: ''
+            },
             errors: '',
-        };
+        }
     },
     methods: {
-      ...mapActions('auth', ['login']),
-      async login() {
-        try {
-          await this.login({ email: this.email, password: this.password });
-          this.$router.push('/dashboard');
-        } catch (error) {
-          alert('Login failed');
+        login() {
+            this.clearMessage();
+            axios.get('/sanctum/csrf-cookie').then(response => {
+                axios.post('api/login', this.user)
+                    .then(response => {
+                        if (response.status == 201) {
+                            const status = true;
+                            const token = response.data.token;
+
+                            this.$store.dispatch('setAuthToken', token)
+                            this.$store.dispatch('setAuthStatus', status)
+                            this.$router.push('/dashboard');
+                            toast("Profile Update Success!", {
+                                "theme": "auto",
+                                "type": "success",
+                                "transition": "bounce",
+                                "dangerouslyHTMLString": true
+                            });
+
+                        }
+
+                    }).catch(error => {
+                        if (error.response.status == 422) {
+                            this.errors = Object.values(error.response.data.errors).flat()
+                        }else {
+                            this.errors = ['Something went wrong']
+                        }
+                    });
+            })
+        },
+
+        clearMessage() {
+            this.errors = '';
         }
-      },
-    },
-  };
+    }
+}
 </script>

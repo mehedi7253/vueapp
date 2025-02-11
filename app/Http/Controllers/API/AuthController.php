@@ -31,21 +31,26 @@ class AuthController extends Controller
         return response()->json(['user' => $user, 'token' => $token], 201);
     }
 
-    public function login(Request $request)
+    public function login(LoginRequest $request)
     {
-        $user = User::where('email', $request->email)->first();
+        try{
+            $user = User::where('email', $request->email)->first();
 
-        if (! $user || ! Hash::check($request->password, $user->password)) {
+            if (! $user || ! Hash::check($request->password, $user->password)) {
+                return response()->json([
+                    'errors' => 'The provided credentials are incorrect.'
+                ], 401);
+            }
+            $token = $user->createToken('token')->plainTextToken;
+
             return response()->json([
-                'errors' => 'The provided credentials are incorrect.'
-            ], 401);
+                'token' => $token,
+                'user' => $user,
+            ], 201);
+        }catch(\Exception $e){
+            return response()->json(['error' => 'Error logging in'], 401);
         }
-        $token = $user->createToken('token')->plainTextToken;
 
-        return response()->json([
-            'token' => $token,
-            'user' => $user,
-        ], 201);
     }
 
     public function checkUserStatus()
