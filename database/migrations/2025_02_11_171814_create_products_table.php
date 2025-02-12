@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('price');
             $table->string('discount_price')->nullable();
             $table->boolean('status')->default('0');
+            $table->string('thumbnail');
             $table->timestamps();
         });
     }

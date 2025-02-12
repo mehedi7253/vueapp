@@ -10,7 +10,7 @@
         <button class="nav-link" @click="logout">Logout</button>
      </li>
      <li class="nav-item d-none d-sm-inline-block">
-       <router-link to="/dashboard" class="nav-link">Dashboard</router-link>
+       <router-link to="/dashboard" class="nav-link">{{ user?.name }}</router-link>
      </li>
    </ul>
 </template>
@@ -20,7 +20,7 @@
     import 'vue3-toastify/dist/index.css';
     export default {
         computed: {
-           ...mapState(['isAuthenticated']),
+           ...mapState(['isAuthenticated', 'user']),
         },
         methods: {
             logout() {
@@ -34,6 +34,11 @@
                 setTimeout(() => {
                     this.$router.push('/login');
                 }, 1000);
+            },
+        },
+        created(){
+            if(!this.user){
+                this.$store.dispatch('fetchUser');
             }
         }
     }

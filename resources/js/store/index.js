@@ -4,31 +4,29 @@ import { createStore } from "vuex";
 export default createStore({
     state: {
         token: localStorage.getItem('token') || '',
-        isAuthenticated: false,
+        isAuthenticated: !!localStorage.getItem('token'),
         user: null,
         apiData: null,
     },
     mutations: {
-        SET_API_DATA(state, data) {
-            state.apiData = data;
-        },
         SET_USER(state, user) {
             state.user = user;
         },
-        UpdateAuthenticationStatus(state, status) {
+        UPDATE_AUTH_STATUS(state, status) {
             state.isAuthenticated = status;
         },
-        UpdateAuthStatus(state, status) {
-            state.isAuthenticated = status;
-        },
-        UpdateToken(state, token) {
+        UPDATE_TOKEN(state, token) {
             state.token = token;
             localStorage.setItem('token', token);
             axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            state.isAuthenticated = !!token; // Automatically update authentication status
         },
-        resetAuth(state) {
-            state.token = null;
+        RESET_AUTH(state) {
+            state.token = '';
             state.isAuthenticated = false;
+            state.user = null;
+            localStorage.removeItem('token');
+            delete axios.defaults.headers.common['Authorization'];
         },
     },
     actions: {
@@ -43,48 +41,45 @@ export default createStore({
         async fetchUser({ commit }) {
             try {
                 const response = await axios.get('/api/user');
-                const user = response.data;
-                if (user && user.name) {
-                    commit('SET_USER', user);
-                } else {
-                    throw new Error('User data is invalid');
-                }
+                commit('SET_USER', response.data);
             } catch (error) {
                 console.error('Failed to fetch user profile:', error);
             }
         },
-        checkUserAuthenticationStatus({ commit }) {
-            axios.get('/api/authenticated')
-                .then(response => {
-                    commit('UpdateAuthenticationStatus', response.data.status);
-                })
-                .catch(error => {
-                    console.error('Failed to check authentication status:', error);
-                });
+        async checkUserAuthenticationStatus({ commit }) {
+            try {
+                const response = await axios.get('/api/authenticated');
+                commit('UPDATE_AUTH_STATUS', response.data.status);
+            } catch (error) {
+                console.error('Failed to check authentication status:', error);
+            }
         },
         setAuthStatus({ commit }, status) {
-            commit('UpdateAuthStatus', status);
+            commit('UPDATE_AUTH_STATUS', status);
         },
         setAuthToken({ commit }, token) {
-            commit('UpdateToken', token);
+            commit('UPDATE_TOKEN', token);
         },
         logout({ commit }) {
-            commit('resetAuth');
-            localStorage.removeItem('token');
-            delete axios.defaults.headers.common['Authorization'];
+            commit('RESET_AUTH');
         },
-        initializeAuth({ commit }) {
+        async initializeAuth({ commit, dispatch }) {
             const token = localStorage.getItem('token');
             if (token) {
-                commit('UpdateToken', token);
-                axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-                commit('UpdateAuthenticationStatus', true);
-                commit('fetchUser');
+                commit('UPDATE_TOKEN', token);
+                try {
+                    await dispatch('fetchUser'); 
+                    commit('UPDATE_AUTH_STATUS', true);
+                } catch {
+                    commit('RESET_AUTH');
+                }
             }
         }
     },
     getters: {
         authStatus: state => state.isAuthenticated,
         apiData: state => state.apiData,
+        user: state => state.user,
+        token: state => state.token
     }
 });

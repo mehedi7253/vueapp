@@ -7,7 +7,7 @@
                        Dashboard
                     </div>
                     <div class="card-body">
-                        <h1>Welcome to <b>{{ user.name }}</b></h1>
+                        <h1>Welcome to <b>{{ user?.name }}</b></h1>
                     </div>
                 </div>
             </div>
@@ -21,9 +21,9 @@
             ...mapState(['user']),
         },
         created(){
-            this.$store.dispatch('fetchUser');
+            if(!this.user){
+                this.$store.dispatch('fetchUser');
+            }
         }
-
-
     }
 </script>

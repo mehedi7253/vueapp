@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\AuthController;
+use App\Http\Controllers\API\ProductController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -17,4 +18,7 @@ Route::middleware(['auth:sanctum'])->group(function() {
     Route::get('authenticated', [AuthController::class, 'checkUserStatus']);
     Route::post('logout', [AuthController::class, 'logout']);
     Route::post('update-profile', [AuthController::class, 'profileUpdate']);
+
+    //product
+    Route::resource('products', ProductController::class);
 });
