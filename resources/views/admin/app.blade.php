@@ -13,8 +13,6 @@
         <link rel="stylesheet" href="{{ asset('backend') }}/plugins/fontawesome-free/css/all.min.css">
         <link rel="stylesheet" href="{{ asset('backend') }}/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
         <link rel="stylesheet" href="{{ asset('backend') }}/dist/css/adminlte.min2167.css?v=3.2.0">
-        <link rel="stylesheet" href="{{ asset('backend') }}/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css">
-        <link rel="stylesheet" href="{{ asset('backend') }}/plugins/datatables-responsive/css/responsive.bootstrap4.min.css">
     @endif
 </head>
 <body class="hold-transition dark-mode sidebar-mini layout-fixed layout-navbar-fixed layout-footer-fixed">
@@ -42,21 +40,5 @@
     <script src="{{ asset('backend') }}/plugins/chart.js/Chart.min.js"></script>
     <script src="{{ asset('backend') }}/dist/js/demo.js"></script>
     <script src="{{ asset('backend') }}/dist/js/pages/dashboard2.js"></script>
-    <script src="{{ asset('backend') }}/plugins/datatables/jquery.dataTables.min.js"></script>
-    <script src="{{ asset('backend') }}/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js"></script>
-    <script src="{{ asset('backend') }}/plugins/datatables-responsive/js/dataTables.responsive.min.js"></script>
-    <script>
-        $(function () {
-          $('#example2').DataTable({
-            "paging": true,
-            "lengthChange": false,
-            "searching": false,
-            "ordering": true,
-            "info": true,
-            "autoWidth": false,
-            "responsive": true,
-          });
-        });
-    </script>
 </body>
 </html>

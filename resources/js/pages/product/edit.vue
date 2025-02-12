@@ -4,10 +4,10 @@
             <div class="col-md-12 col-sm-12 mt-2">
                 <div class="card">
                     <div class="card-header">
-                        Add New Product
+                        Update Product
                     </div>
                     <div class="card-body">
-                        <form @submit.prevent="addNewProduct" enctype="multipart/form-data">
+                        <form @submit.prevent="updateProduct" enctype="multipart/form-data">
                             <div class="row">
                                 <div class="form-group col-md-12">
                                     <label for="productName">Product Name:</label>
@@ -24,22 +24,24 @@
                                     <input type="number" v-bind:class="errors && errors.discount_price ? 'form-control is-invalid' : 'form-control'" v-model="product.discount_price" placeholder="Enter Price">
                                     <span v-if="errors.discount_price" class="text-danger">{{ errors.discount_price }}</span>
                                 </div>
-                                <div class="form-group col-md-6">
+                                <div class="form-group col-md-5">
                                     <label for="productPrice">Thumbnail:</label>
                                     <input type="file" v-bind:class="errors && errors.thumbnail ? 'form-control is-invalid' : 'form-control'" id="thumbnail" @change="handleFileUpload">
                                     <span v-if="errors.thumbnail" class="text-danger">{{ errors.thumbnail }}</span>
                                 </div>
+                                <div class="form-group col-md-1 mt-4">
+                                    <img :src="product.thumbnail" style="height: 50px; width: 50px;">
+                                </div>
                                 <div class="form-group col-md-6">
                                     <label for="productQuantity">Status:</label>
-                                    <select v-bind:class="errors && errors.status ? 'form-control is-invalid' : 'form-control'" id="productQuantity" v-model="product.status">
-                                        <option value="">Select</option>
-                                        <option value="1">Active</option>
-                                        <option value="0">Inactive</option>
+                                    <select v-bind:class="errors && errors.status ? 'form-control is-invalid' : 'form-control'" v-model="product.status">
+                                        <option value="0" :selected="product.status == '0'">Active</option>
+                                        <option value="1" :selected="product.status == '1'">Inactive</option>
                                     </select>
                                     <span v-if="errors.status" class="text-danger">{{ errors.status }}</span>
                                 </div>
                                 <div class="form-group col-md-12">
-                                    <button type="submit" class="btn btn-primary">Add Product</button>
+                                    <button type="submit" class="btn btn-primary">Update Product</button>
                                 </div>
                             </div>
                         </form>
@@ -56,56 +58,44 @@ import 'vue3-toastify/dist/index.css';
 export default{
     data() {
         return {
-            product: {
+            product:{
                 product_name: '',
                 price: '',
                 discount_price: '',
+                status: '',
                 thumbnail: null,
-                status: ''
             },
             errors: [],
         }
     },
+    mounted(){
+        this.editProduct(this.$route.params.productId);
+    },
     methods: {
+        editProduct(productId) {
+            axios.get(`/api/products/${productId}/edit`)
+                .then((response) => {
+                    this.product = response.data;
+                });
+        },
         handleFileUpload(event) {
             this.product.thumbnail = event.target.files[0];
         },
-        addNewProduct(){
-            let formData = new FormData();
-            formData.append('product_name', this.product.product_name);
-            formData.append('price', this.product.price);
-            formData.append('discount_price', this.product.discount_price);
-            formData.append('thumbnail', this.product.thumbnail);
-            formData.append('status', this.product.status);
-
-            try{
-                let response = axios.post('api/products', formData,{
-                    headers: {
-                        'Content-Type':'multipart/form-data'
-                    }
-                }).then((response) => {
-                    toast("New Product Successful", {
-                        "theme": "auto",
-                        "type": "success",
-                        "transition": "bounce",
-                        "dangerouslyHTMLString": true
+        updateProduct(){
+            let product_id = this.$route.params.productId;
+            axios.put(`/api/products/${product_id}`, this.product)
+               .then((response) => {
+                    toast("Product update Successful", {
+                        theme: "auto",
+                        type: "success",
+                        transition: "bounce",
+                        dangerouslyHTMLString: true
                     });
-                    //clear all input fields
-                    this.product = {
-                        product_name: '',
-                        price: '',
-                        discount_price: '',
-                        thumbnail: null,
-                        status: ''
-                    };
-                    this.errors = '';
-                }).catch(error => {
+                    //return product
+                })
+               .catch((error) => {
                     this.errors = error.response.data.errors;
                 });
-
-            }catch(error) {
-                console.log(error);
-            }
         }
     }
 }

@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ProductRequest;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ProductController extends Controller
 {
@@ -13,7 +15,7 @@ class ProductController extends Controller
      */
     public function index()
     {
-        $product = Product::all();
+        $product = Product::orderBy('id', 'DESC')->get();
         return response()->json($product);
     }
 
@@ -28,9 +30,22 @@ class ProductController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ProductRequest $request)
     {
-        //
+        $product = new Product();
+        $product->product_name  = $request->product_name;
+        $product->slug          = str::slug($request->product_name);
+        $product->price         = $request->price;
+        $product->discount_price = $request->discount_price;
+        $product->status       = $request->status;
+
+        if ($request->hasFile('thumbnail')) {
+            $location = '/uploads/product/';
+            $image = $request->file('thumbnail');
+            $image = saveImage($image, $location);
+            $product->thumbnail = $image;
+        }
+        $product->save();
     }
 
     /**
@@ -46,7 +61,8 @@ class ProductController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        $product = Product::find($id);
+        return response()->json($product);
     }
 
     /**
@@ -54,7 +70,26 @@ class ProductController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $product = Product::find($id);
+        $product->product_name  = $request->product_name;
+        $product->slug          = str::slug($request->product_name);
+        $product->price         = $request->price;
+        $product->discount_price = $request->discount_price;
+        $product->status       = $request->status;
+
+        if ($request->hasFile('thumbnail')) {
+            deleteImage($product->thumbnail);
+            $location = '/uploads/product/';
+            $image = $request->file('thumbnail');
+            $image = saveImage($image, $location);
+            $product->thumbnail = $image;
+        }
+
+        $product->save();
+        return response()->json([
+           'message' => 'Product updated successfully',
+           'data' => $product,
+        ], 200);
     }
 
     /**
@@ -62,6 +97,11 @@ class ProductController extends Controller
      */
     public function destroy(string $id)
     {
-        //
+        $product = Product::find($id);
+        deleteImage($product->thumbnail);
+        $product->delete();
+        return response()->json([
+           'message' => 'Product deleted successfully'
+        ], 200);
     }
 }

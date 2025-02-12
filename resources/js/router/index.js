@@ -45,6 +45,14 @@ const routes = [
         meta: {
             requiresAuth: true
         }
+    },
+    {
+        path: '/edit-product/:productId',
+        name: 'EditProduct',
+        component: () => import('../pages/product/edit.vue'),
+        meta: {
+            requiresAuth: true
+        }
     }
 ];
 
