@@ -68,7 +68,7 @@ export default createStore({
             if (token) {
                 commit('UPDATE_TOKEN', token);
                 try {
-                    await dispatch('fetchUser'); 
+                    await dispatch('fetchUser');
                     commit('UPDATE_AUTH_STATUS', true);
                 } catch {
                     commit('RESET_AUTH');

@@ -24,10 +24,12 @@
                             </div>
                             <div class="form-group mt-4">
                                 <button type="submit" class="btn btn-primary">Login</button>
+                                <button @click="loginWithGoogle">Login with Google</button>
                             </div>
                         </form>
                     </div>
                     <div class="card-footer">
+                        <p v-if="users">Welcome, {{ users.name }}</p>
                         <router-link to="/register">Registration</router-link>
                     </div>
                 </div>
@@ -46,6 +48,18 @@ export default{
                 password: ''
             },
             errors: '',
+            users: '',
+            token: '',
+        }
+    },
+    mounted() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        if (token) {
+            localStorage.setItem('token', token);
+            this.token = token;
+            this.getUserData();
         }
     },
     methods: {
@@ -80,6 +94,19 @@ export default{
             })
         },
 
+        loginWithGoogle() {
+            window.location.href = 'api/auth/google';
+        },
+        async getUserData() {
+        try {
+            const response = await axios.get('api/user', {
+                headers: { Authorization: `Bearer ${this.token}` },
+                });
+                this.users = response.data;
+            } catch (error) {
+                console.error(error);
+            }
+        },
         clearMessage() {
             this.errors = '';
         }
