@@ -44,7 +44,35 @@
                         <h3>Cart Item</h3>
                     </div>
                     <div class="card-body">
-                        {{ cartItems }}
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Image</th>
+                                    <th>Price</th>
+                                    <th>Quantity</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody v-if="cartItems.length > 0">
+                                <tr v-for="item in cartItems" :key="item.id">
+                                    <td>
+                                        <!-- <img :src="item.options.image" class="img-fluid" alt="Product Image"> -->
+                                    </td>
+                                    <td>{{ item.price }}</td>
+                                    <td>
+                                        <input type="number" v-model="item.qty" min="1" max="10">
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm">Remove</button>
+                                    </td>
+                                </tr>
+                            </tbody>
+                            <tfoot v-else>
+                                <tr>
+                                    <td colspan="4" class="text-center">No items in cart.</td>
+                                </tr>
+                            </tfoot>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -55,13 +83,13 @@
     export default{
         data(){
             return{
-                products: {},
+                products: [],
                 cartItems: [],
             }
         },
         mounted(){
             this.getProducts();
-            this.getCartItems();
+            this.fetchCartData();
         },
         methods:{
             getProducts(){
@@ -76,20 +104,22 @@
             addToCart(productId){
                 axios.post('api/add-to-cart', { product_id: productId})
                 .then(response => {
-                    this.getCartItems();
+                    // this.cartItems = response.data;
+                    this.fetchCartData();
                 })
+               .catch(error => {
+                    console.error('Error adding product to cart:', error);
+                });
             },
-            getCartItems(){
-                axios.get('api/cart-item')
-                   .then(response => {
-                        this.cartItems = response.data;
-                        console.log("item",this.cartItems);
-                    })
-                   .catch(error => {
-                        console.error(error);
-                    });
-            }
-
-        }
+            async fetchCartData(){
+                try{
+                    const response = await axios.get('/api/cart-item');
+                    this.cartItems = response.data;
+                    this.totalPrice = response.data.totalPrice;
+                }catch(error){
+                    console.error('Error fetching cart data:', error);
+                }
+            },
+        },
     }
 </script>

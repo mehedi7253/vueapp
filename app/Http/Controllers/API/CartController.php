@@ -11,13 +11,17 @@ class CartController extends Controller
 {
     public function item()
     {
-        $cartItems = Cart::content();
-        return response()->json($cartItems);
+        return response()->json(
+            [
+                'cartItems' => Cart::content(),
+                'totalPrice' => Cart::total(),
+            ]
+        );
     }
     public function addToCart(Request $request)
     {
         $product = Product::find($request->product_id);
-        $cart = Cart::add([
+        Cart::add([
             'id'     => $product->id,
             'name'   => $product->product_name,
             'qty'    => 1,
@@ -28,8 +32,6 @@ class CartController extends Controller
                 'url'    => $product->slug,
             ],
         ]);
-        return response()->json([
-            'message' => 'Product added to cart',
-        ]);
+        return response()->json(Cart::content());
     }
 }
