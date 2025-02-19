@@ -83,9 +83,9 @@
         </div>
     </div>
 </template>
-
-
 <script>
+    import { toast } from 'vue3-toastify';
+    import 'vue3-toastify/dist/index.css';
     export default {
         data() {
             return {
@@ -122,6 +122,12 @@
                 axios.post('/api/add-to-cart', { product_id: productId })
                     .then(response => {
                         this.fetchCartData();
+                        toast("New Item Add to Cart!", {
+                            "theme": "auto",
+                            "type": "success",
+                            "transition": "bounce",
+                            "dangerouslyHTMLString": true
+                        });
                     })
                     .catch(error => {
                         console.error(error);
@@ -131,6 +137,12 @@
                 axios.post('/api/remove-cart', { rowId: rowId })
                     .then(response => {
                         this.fetchCartData();
+                        toast("Item Removed Successful", {
+                            "theme": "auto",
+                            "type": "success",
+                            "transition": "bounce",
+                            "dangerouslyHTMLString": true
+                        });
                     })
                     .catch(error => {
                         console.error(error);
