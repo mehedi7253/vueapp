@@ -4,13 +4,13 @@
             <div class="col-md-7 col-sm-12 mt-3">
                 <div class="card">
                     <div class="card-header">
-                        <h3>All Product</h3>
+                        <h3>All Products</h3>
                     </div>
                     <div class="card-body">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
-                                    <th>ID</th>
+                                    <th>Image</th>
                                     <th>Name</th>
                                     <th>Price</th>
                                     <th>Action</th>
@@ -18,7 +18,9 @@
                             </thead>
                             <tbody>
                                 <tr v-for="product in products" :key="product.id">
-                                    <td>{{ product.id }}</td>
+                                    <td>
+                                       <img :src="product.thumbnail" style="height: 50px; width: 50px;">
+                                    </td>
                                     <td>{{ product.product_name }}</td>
                                     <td>
                                         <span v-if="!product.discount_price">
@@ -41,35 +43,37 @@
             <div class="col-md-5 col-sm-12 mt-3">
                 <div class="card">
                     <div class="card-header">
-                        <h3>Cart Item</h3>
+                        <h3>Cart Items</h3>
                     </div>
                     <div class="card-body">
                         <table class="table table-bordered">
                             <thead>
                                 <tr>
                                     <th>Image</th>
-                                    <th>Price</th>
+                                    <th>Name</th>
                                     <th>Quantity</th>
+                                    <th>Total</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
-                            <tbody v-if="cartItems.length > 0">
+                            <tbody>
+                                <tr class="text-center">
+                                    <td colspan="5" v-if="cartItems.length == 0">No items in the cart</td>
+                                </tr>
                                 <tr v-for="item in cartItems" :key="item.id">
+                                    <td><img :src="item.options.image"></td>
+                                    <td>{{ item.name }}</td>
+                                    <td>{{ item.qty }}</td>
+                                    <td>{{ item.price * item.qty }}</td>
                                     <td>
-                                        <!-- <img :src="item.options.image" class="img-fluid" alt="Product Image"> -->
-                                    </td>
-                                    <td>{{ item.price }}</td>
-                                    <td>
-                                        <input type="number" v-model="item.qty" min="1" max="10">
-                                    </td>
-                                    <td>
-                                        <button class="btn btn-danger btn-sm">Remove</button>
+                                        <button @click="removeFromCart(item.rowId)" class="btn btn-danger btn-sm">x</button>
                                     </td>
                                 </tr>
                             </tbody>
-                            <tfoot v-else>
+                            <tfoot>
                                 <tr>
-                                    <td colspan="4" class="text-center">No items in cart.</td>
+                                    <td colspan="3" class="text-right">Total</td>
+                                    <td>{{ totalPrice }}</td>
                                 </tr>
                             </tfoot>
                         </table>
@@ -79,47 +83,59 @@
         </div>
     </div>
 </template>
+
+
 <script>
-    export default{
-        data(){
-            return{
+    export default {
+        data() {
+            return {
                 products: [],
                 cartItems: [],
+                totalPrice: 0
             }
         },
-        mounted(){
+        mounted() {
             this.getProducts();
             this.fetchCartData();
         },
-        methods:{
-            getProducts(){
-                axios.get('api/products')
-                   .then(response => {
+        methods: {
+            getProducts() {
+                axios.get('/api/products')
+                    .then(response => {
                         this.products = response.data;
                     })
-                   .catch(error => {
+                    .catch(error => {
                         console.error(error);
                     });
             },
-            addToCart(productId){
-                axios.post('api/add-to-cart', { product_id: productId})
-                .then(response => {
-                    // this.cartItems = response.data;
-                    this.fetchCartData();
-                })
-               .catch(error => {
-                    console.error('Error adding product to cart:', error);
-                });
+            fetchCartData() {
+                axios.get('/api/cart-item')
+                    .then(response => {
+                        this.cartItems = response.data.cartItems;
+                        this.totalPrice = response.data.totalPrice;
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
             },
-            async fetchCartData(){
-                try{
-                    const response = await axios.get('/api/cart-item');
-                    this.cartItems = response.data;
-                    this.totalPrice = response.data.totalPrice;
-                }catch(error){
-                    console.error('Error fetching cart data:', error);
-                }
+            addToCart(productId) {
+                axios.post('/api/add-to-cart', { product_id: productId })
+                    .then(response => {
+                        this.fetchCartData();
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
             },
-        },
+            removeFromCart(rowId) {
+                axios.post('/api/remove-cart', { rowId: rowId })
+                    .then(response => {
+                        this.fetchCartData();
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
+            }
+        }
     }
 </script>

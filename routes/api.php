@@ -28,8 +28,17 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function() {
     Route::resource('products', ProductController::class);
 
     //cart
+    // Route::get('cart-item', [CartController::class, 'item']);
+    // Route::post('add-to-cart', [CartController::class, 'addToCart']);
+    // Route::post('remove-cart', [CartController::class, 'remove']);
+
     Route::get('cart-item', [CartController::class, 'item']);
     Route::post('add-to-cart', [CartController::class, 'addToCart']);
+    Route::post('remove-cart', [CartController::class, 'remove']);
+    Route::post('update-cart', [CartController::class, 'updateCart']);
+
+
+    //role permission
     Route::post('assign-role', [RoleController::class, 'assignRole']);
     Route::get('user-permissions', [RoleController::class, 'getUserPermissions']);
 });
