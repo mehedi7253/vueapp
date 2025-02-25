@@ -80,6 +80,6 @@ export default createStore({
         authStatus: state => state.isAuthenticated,
         apiData: state => state.apiData,
         user: state => state.user,
-        token: state => state.token
+        token: state => state.token,
     }
 });

@@ -43,11 +43,22 @@ class CartController extends Controller
 
     public function updateCart(Request $request)
     {
-        $request->validate([
-            'rowId' => 'required|string',
-            'quantity' => 'required|integer|min=1'
-        ]);
-        Cart::update($request->rowId, $request->quantity);
+        $rowId = $request->rowId;
+        $qty = Cart::get($rowId)->qty;
+        Cart::update($rowId, $qty + 1);
+        return response()->json(['message' => 'Cart updated successfully'], 200);
+    }
+
+    //decrement quantity and if quantity is less then 0 remove from cart
+    public function decrementQuantity(Request $request)
+    {
+        $rowId = $request->rowId;
+        $qty = Cart::get($rowId)->qty;
+        if ($qty <= 1) {
+            Cart::remove($rowId);
+        } else {
+            Cart::update($rowId, $qty - 1);
+        }
         return response()->json(['message' => 'Cart updated successfully'], 200);
     }
 }

@@ -63,7 +63,11 @@
                                 <tr v-for="item in cartItems" :key="item.id">
                                     <td><img :src="item.options.image"></td>
                                     <td>{{ item.name }}</td>
-                                    <td>{{ item.qty }}</td>
+                                    <td>
+                                        <button @click="updateCart(item.rowId)" class="btn btn-info btn-sm">+</button>
+                                        <input type="text" class="form-control" v-model="item.qty" style="width: 50px;">
+                                        <button @click="minusFromCart(item.rowId)" class="btn btn-danger btn-sm">-</button>
+                                    </td>
                                     <td>{{ item.price * item.qty }}</td>
                                     <td>
                                         <button @click="removeFromCart(item.rowId)" class="btn btn-danger btn-sm">x</button>
@@ -143,6 +147,23 @@
                             "transition": "bounce",
                             "dangerouslyHTMLString": true
                         });
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
+            },
+            minusFromCart(rowId){
+                axios.post('/api/decrement-quantity', { rowId: rowId })
+                    .then(response => {
+                        this.fetchCartData();
+                    }).catch(error => {
+                        console.error(error);
+                    });
+            },
+            updateCart(rowId){
+                axios.post('/api/update-cart', { rowId: rowId })
+                    .then(response => {
+                        this.fetchCartData();
                     })
                     .catch(error => {
                         console.error(error);

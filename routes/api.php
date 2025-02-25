@@ -36,7 +36,7 @@ Route::middleware(['auth:sanctum', 'role:admin'])->group(function() {
     Route::post('add-to-cart', [CartController::class, 'addToCart']);
     Route::post('remove-cart', [CartController::class, 'remove']);
     Route::post('update-cart', [CartController::class, 'updateCart']);
-
+    Route::post('decrement-quantity', [CartController::class, 'decrementQuantity']);
 
     //role permission
     Route::post('assign-role', [RoleController::class, 'assignRole']);
