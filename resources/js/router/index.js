@@ -61,6 +61,13 @@ const routes = [
         meta: {
             requiresAuth: true
         }
+    },{
+        path: '/tiktok',
+        name: 'Tiktok',
+        component: () => import('../pages/tiktok/index.vue'),
+        meta: {
+            requiresAuth: true
+        }
     }
 ];
 
